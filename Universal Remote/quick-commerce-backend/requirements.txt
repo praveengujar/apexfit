@@ -1,0 +1,7 @@
+Flask
+google-cloud-dialogflow-cx
+google-cloud-firestore
+google-cloud-secret-manager
+google-cloud-pubsub
+requests
+gunicorn
