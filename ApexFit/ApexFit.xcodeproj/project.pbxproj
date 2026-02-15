@@ -180,6 +180,7 @@
 		D54FAF2AD745597879D76A5E /* WorkoutStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D4F10AD90CC2412EEF4E7B /* WorkoutStartView.swift */; };
 		D8D5AF17EE9F9BFDA4BB1356 /* SleepSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B459CF8058EA74413542FF /* SleepSession.swift */; };
 		D911547411F97EE06E172373 /* SleepDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13842DA6E602A1C8241A0D9 /* SleepDetailView.swift */; };
+		AA11223344556677AABBCCDD /* SleepDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11223344556677AABBCCDD /* SleepDashboardView.swift */; };
 		D9589F36ABD77A7F33714C86 /* JournalResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D54AA1C7B8C4B20C8843C495 /* JournalResponse.swift */; };
 		D97B2EC56E2F9B6D24D7BAF0 /* DashboardGaugeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2B8DE88F9EB9125E0BE02 /* DashboardGaugeRow.swift */; };
 		DC19B69D4508E36B45E918B6 /* JournalSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877F49026612A9C4A0D26E8E /* JournalSetupView.swift */; };
@@ -370,6 +371,7 @@
 		CDE79FE9E26796B42284A329 /* ComplicationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationEntry.swift; sourceTree = "<group>"; };
 		CEC1AA6F8770F2CF1E3587C9 /* ScoringConfig.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ScoringConfig.json; sourceTree = "<group>"; };
 		D13842DA6E602A1C8241A0D9 /* SleepDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDetailView.swift; sourceTree = "<group>"; };
+		BB11223344556677AABBCCDD /* SleepDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDashboardView.swift; sourceTree = "<group>"; };
 		D25E9C2CCB98812F7B9D8FEA /* SleepService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepService.swift; sourceTree = "<group>"; };
 		D2CF198180E888196ACBB59B /* MetricComputationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricComputationService.swift; sourceTree = "<group>"; };
 		D3F2F831EF0DEE76CB45E28E /* RecoveryInsightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryInsightView.swift; sourceTree = "<group>"; };
@@ -523,6 +525,7 @@
 			isa = PBXGroup;
 			children = (
 				B6AA9D5710FE0662ADF92BD7 /* HypnogramView.swift */,
+				BB11223344556677AABBCCDD /* SleepDashboardView.swift */,
 				D13842DA6E602A1C8241A0D9 /* SleepDetailView.swift */,
 				38FC7C81E9E51EAF527D77A6 /* SleepPlannerView.swift */,
 				51E5E9D31725172B0F16D9E5 /* SleepStageChartView.swift */,
@@ -1023,6 +1026,7 @@
 				63B12B678EA01C09A4D761E1 /* ScoringConfig.swift in Sources */,
 				D16EC0E5CBBDFA7327E5E851 /* SettingsView.swift in Sources */,
 				063B7C26F1AA7427FE748E45 /* SignInView.swift in Sources */,
+				AA11223344556677AABBCCDD /* SleepDashboardView.swift in Sources */,
 				D911547411F97EE06E172373 /* SleepDetailView.swift in Sources */,
 				AD9B7BEEC494827E9E09AE88 /* SleepEngine.swift in Sources */,
 				DD69020E33EE25DF6A2FA66B /* SleepGoalSettingsView.swift in Sources */,

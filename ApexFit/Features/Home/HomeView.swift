@@ -9,6 +9,7 @@ struct HomeView: View {
     private var journalEntries: [JournalEntry]
 
     @State private var selectedDate = Date()
+    @State private var showSleepDashboard = false
     @State private var gaugeRowInitialOffset: CGFloat? = nil
     @State private var gaugeRowCurrentOffset: CGFloat = 0
 
@@ -56,7 +57,7 @@ struct HomeView: View {
                         DashboardGaugeRow(
                             metric: selectedMetric,
                             collapseProgress: collapseProgress,
-                            onSleepTap: {},
+                            onSleepTap: { showSleepDashboard = true },
                             onRecoveryTap: {},
                             onStrainTap: {}
                         )
@@ -149,6 +150,9 @@ struct HomeView: View {
             }
             .background(AppColors.backgroundPrimary)
             .navigationBarHidden(true)
+            .navigationDestination(isPresented: $showSleepDashboard) {
+                SleepDashboardView()
+            }
         }
     }
 
