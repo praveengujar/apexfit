@@ -7,6 +7,7 @@ import SwiftData
 /// 3. Recovery (depends on sleep performance + baselines)
 /// 4. Strain + Workouts (independent, but update daily metric)
 /// 5. Additional data (steps, calories, VO2Max)
+/// 6. Stress (intraday timeline + daily average)
 actor MetricComputationService {
     private let modelContext: ModelContext
     private let queryService: HealthKitQueryService
@@ -26,7 +27,7 @@ actor MetricComputationService {
         let baselineService = BaselineService(modelContext: modelContext)
         try await baselineService.recomputeBaselines()
 
-        // Step 2: Process sleep
+        // Step 2: Process sleep (with composite scoring + consistency)
         let sleepService = SleepService(modelContext: modelContext, queryService: queryService)
         try await sleepService.processSleep(
             for: date,
@@ -34,7 +35,7 @@ actor MetricComputationService {
             baselineSleepHours: profile.sleepBaselineHours
         )
 
-        // Step 3: Compute recovery
+        // Step 3: Compute recovery (now includes skin temperature)
         let recoveryService = RecoveryService(modelContext: modelContext, queryService: queryService)
         try await recoveryService.computeRecovery(for: date, dailyMetric: dailyMetric)
 
@@ -59,6 +60,9 @@ actor MetricComputationService {
         dailyMetric.activeCalories = try await calories
         dailyMetric.vo2Max = try await vo2Max
 
+        // Step 6: Compute stress timeline and daily average
+        try await computeStress(for: date, dailyMetric: dailyMetric)
+
         // Mark as computed
         dailyMetric.isComputed = true
         dailyMetric.computedAt = Date()
@@ -81,6 +85,27 @@ actor MetricComputationService {
         dailyMetric.computedAt = Date()
 
         try modelContext.save()
+    }
+
+    // MARK: - Stress Computation
+
+    /// Compute stress timeline for the day and store daily average.
+    private func computeStress(for date: Date, dailyMetric: DailyMetric) async throws {
+        // Build stress baselines from recent daily metrics
+        let cutoffDate = date.daysAgo(14)
+        let descriptor = FetchDescriptor<DailyMetric>(
+            predicate: #Predicate { $0.date >= cutoffDate && $0.date < date },
+            sortBy: [SortDescriptor(\.date, order: .forward)]
+        )
+        let recentMetrics = try modelContext.fetch(descriptor)
+
+        // StressService is @MainActor — hop to main actor for init + sync methods
+        let stressService = await StressService(queryService: queryService)
+        await stressService.computeBaselines(using: recentMetrics)
+
+        // Async methods handle their own actor hopping
+        try await stressService.computeStressTimeline(for: date)
+        dailyMetric.stressAverage = await stressService.computeDailyStressAverage()
     }
 
     // MARK: - Helpers

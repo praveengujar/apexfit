@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api import (
     coach,
+    dashboard,
     healthspan,
     journal,
     metrics,
@@ -13,6 +14,7 @@ from app.api import (
     recovery,
     sleep,
     strain,
+    stress,
     teams,
     users,
     workouts,
@@ -33,3 +35,5 @@ api_router.include_router(healthspan.router, prefix="/healthspan", tags=["health
 api_router.include_router(
     notifications.router, prefix="/notifications", tags=["notifications"]
 )
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(stress.router, prefix="/stress", tags=["stress"])

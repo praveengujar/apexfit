@@ -24,12 +24,14 @@ actor RecoveryService {
         async let rhr = queryService.fetchRestingHeartRate(for: date)
         async let respRate = queryService.fetchRespiratoryRate(for: date)
         async let spo2 = queryService.fetchSpO2(for: date)
+        async let skinTemp = queryService.fetchSkinTemperature(for: date)
 
         let fetchedRR = try await rrIntervals
         let fetchedHRV = try await hrvSamples
         let fetchedRHR = try await rhr
         let fetchedRespRate = try await respRate
         let fetchedSpO2 = try await spo2
+        let fetchedSkinTemp = try await skinTemp
 
         // Compute best HRV value
         let sdnn = fetchedHRV.last?.sdnn
@@ -42,14 +44,16 @@ actor RecoveryService {
         dailyMetric.restingHeartRate = fetchedRHR
         dailyMetric.respiratoryRate = fetchedRespRate
         dailyMetric.spo2 = fetchedSpO2
+        dailyMetric.skinTemperature = fetchedSkinTemp
 
-        // Get baselines
+        // Get baselines (includes skin temperature)
         let baselines = RecoveryBaselines(
             hrv: try await baselineService.getBaseline(for: .hrv),
             restingHeartRate: try await baselineService.getBaseline(for: .restingHeartRate),
             sleepPerformance: try await baselineService.getBaseline(for: .sleepPerformance),
             respiratoryRate: try await baselineService.getBaseline(for: .respiratoryRate),
-            spo2: try await baselineService.getBaseline(for: .spo2)
+            spo2: try await baselineService.getBaseline(for: .spo2),
+            skinTemperature: try await baselineService.getBaseline(for: .skinTemperature)
         )
 
         // Build recovery input
@@ -58,7 +62,8 @@ actor RecoveryService {
             restingHeartRate: fetchedRHR,
             sleepPerformance: dailyMetric.sleepPerformance,
             respiratoryRate: fetchedRespRate,
-            spo2: fetchedSpO2
+            spo2: fetchedSpO2,
+            skinTemperatureDeviation: fetchedSkinTemp
         )
 
         // Compute

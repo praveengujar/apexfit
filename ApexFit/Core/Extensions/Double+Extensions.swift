@@ -36,6 +36,14 @@ extension Double {
     }
 }
 
+import CoreGraphics
+
+extension CGFloat {
+    func clamped(to range: ClosedRange<CGFloat>) -> CGFloat {
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
+    }
+}
+
 extension Int {
     var formattedWithComma: String {
         let formatter = NumberFormatter()

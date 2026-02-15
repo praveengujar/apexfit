@@ -38,6 +38,7 @@ enum BaselineMetricType: String, Codable, CaseIterable {
     case restingHeartRate
     case respiratoryRate
     case spo2
+    case skinTemperature
     case sleepDuration
     case sleepPerformance
     case strain

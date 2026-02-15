@@ -1,60 +1,65 @@
 import Foundation
 
 enum HealthKitConstants {
+    private static var c: ScoringConfig { ConfigurationManager.shared.config }
+
     // MARK: - Data Staleness Thresholds
-    static let heartRateStalenessHours = 4
-    static let sleepDataStalenessHours = 18
-    static let workoutStalenessHours = 24
-    static let restingHRStalenessHours = 24
-    static let hrvStalenessHours = 24
-    static let spo2StalenessHours = 24
+    static var heartRateStalenessHours: Int { c.staleness.heartRateHours }
+    static var sleepDataStalenessHours: Int { c.staleness.sleepDataHours }
+    static var workoutStalenessHours: Int { c.staleness.workoutHours }
+    static var restingHRStalenessHours: Int { c.staleness.restingHRHours }
+    static var hrvStalenessHours: Int { c.staleness.hrvHours }
+    static var spo2StalenessHours: Int { c.staleness.spo2Hours }
 
     // MARK: - Background Task Identifiers
     static let backgroundRefreshTaskID = "com.apexfit.background.refresh"
     static let backgroundProcessingTaskID = "com.apexfit.background.processing"
 
     // MARK: - Baseline Computation
-    static let baselineWindowDays = 28
-    static let minimumBaselineSamples = 3
-    static let baselineFallbackDays = 7
+    static var baselineWindowDays: Int { c.baselines.windowDays }
+    static var minimumBaselineSamples: Int { c.baselines.minimumSamples }
+    static var baselineFallbackDays: Int { c.baselines.fallbackDays }
 
     // MARK: - Sleep Session Detection
-    static let sleepSessionGapToleranceMinutes = 30.0
-    static let minimumSleepDurationMinutes = 30.0
-    static let maximumNapDurationHours = 3.0
-    static let napCreditCapHours = 1.5
+    static var sleepSessionGapToleranceMinutes: Double { c.sleep.sessionDetection.gapToleranceMinutes }
+    static var minimumSleepDurationMinutes: Double { c.sleep.sessionDetection.minimumDurationMinutes }
+    static var maximumNapDurationHours: Double { c.sleep.sessionDetection.maximumNapDurationHours }
+    static var napCreditCapHours: Double { c.sleep.sessionDetection.napCreditCapHours }
 
     // MARK: - Recovery Timing
     static let recoveryRecalculationThresholdPoints = 3.0
 
     // MARK: - Strain Computation
-    static let strainScalingFactor = 6.0
-    static let strainMaxValue = 21.0
-    static let strainMinValue = 0.0
+    static var strainScalingFactor: Double { c.strain.scalingFactor }
+    static var strainMaxValue: Double { c.strain.maxValue }
+    static var strainMinValue: Double { c.strain.minValue }
 
     // MARK: - Heart Rate Zones (% of Max HR)
-    static let zone1LowerBound = 0.50
-    static let zone1UpperBound = 0.60
-    static let zone2UpperBound = 0.70
-    static let zone3UpperBound = 0.80
-    static let zone4UpperBound = 0.90
-    static let zone5UpperBound = 1.00
+    static var zone1LowerBound: Double { c.heartRateZones.boundaries[0] }
+    static var zone1UpperBound: Double { c.heartRateZones.boundaries[1] }
+    static var zone2UpperBound: Double { c.heartRateZones.boundaries[2] }
+    static var zone3UpperBound: Double { c.heartRateZones.boundaries[3] }
+    static var zone4UpperBound: Double { c.heartRateZones.boundaries[4] }
+    static var zone5UpperBound: Double { c.heartRateZones.boundaries[5] }
 
     // MARK: - Zone Multipliers
-    static let zone1Multiplier = 1.0
-    static let zone2Multiplier = 2.0
-    static let zone3Multiplier = 3.0
-    static let zone4Multiplier = 4.0
-    static let zone5Multiplier = 5.0
+    static var zone1Multiplier: Double { c.heartRateZones.multipliers[0] }
+    static var zone2Multiplier: Double { c.heartRateZones.multipliers[1] }
+    static var zone3Multiplier: Double { c.heartRateZones.multipliers[2] }
+    static var zone4Multiplier: Double { c.heartRateZones.multipliers[3] }
+    static var zone5Multiplier: Double { c.heartRateZones.multipliers[4] }
 
-    // MARK: - Recovery Weights
-    static let recoveryHRVWeight = 0.30
-    static let recoveryRHRWeight = 0.25
-    static let recoverySleepWeight = 0.25
-    static let recoveryRespRateWeight = 0.10
-    static let recoverySpO2Weight = 0.10
+    // MARK: - Recovery Weights (research-backed)
+    // Meta-analysis PMC5900369: HRV is the most sensitive autonomic marker.
+    // WHOOP uses ~70% autonomic (HRV+RHR), ~20% sleep, ~10% secondary.
+    static var recoveryHRVWeight: Double { c.recovery.weights.hrv }
+    static var recoveryRHRWeight: Double { c.recovery.weights.restingHeartRate }
+    static var recoverySleepWeight: Double { c.recovery.weights.sleep }
+    static var recoveryRespRateWeight: Double { c.recovery.weights.respiratoryRate }
+    static var recoverySpO2Weight: Double { c.recovery.weights.spo2 }
+    static var recoverySkinTempWeight: Double { c.recovery.weights.skinTemperature }
 
     // MARK: - Sleep Need Defaults
-    static let defaultSleepBaselineHours = 7.5
-    static let defaultSleepOnsetLatencyMinutes = 15.0
+    static var defaultSleepBaselineHours: Double { c.sleep.defaults.baselineHours }
+    static var defaultSleepOnsetLatencyMinutes: Double { c.sleep.defaults.onsetLatencyMinutes }
 }

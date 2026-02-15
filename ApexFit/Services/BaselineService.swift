@@ -41,10 +41,34 @@ actor BaselineService {
             try await saveBaseline(type: .spo2, result: baseline)
         }
 
+        // Skin Temperature baseline
+        let skinTempValues = metrics.compactMap { $0.skinTemperature }
+        if let baseline = BaselineEngine.computeBaseline(values: skinTempValues) {
+            try await saveBaseline(type: .skinTemperature, result: baseline)
+        }
+
         // Sleep Performance baseline
         let sleepPerfValues = metrics.compactMap { $0.sleepPerformance }
         if let baseline = BaselineEngine.computeBaseline(values: sleepPerfValues) {
             try await saveBaseline(type: .sleepPerformance, result: baseline)
+        }
+
+        // Sleep Duration baseline
+        let sleepDurValues = metrics.compactMap { $0.sleepDurationHours }
+        if let baseline = BaselineEngine.computeBaseline(values: sleepDurValues) {
+            try await saveBaseline(type: .sleepDuration, result: baseline)
+        }
+
+        // Deep Sleep % baseline
+        let deepPctValues = metrics.compactMap { $0.deepSleepPct }
+        if let baseline = BaselineEngine.computeBaseline(values: deepPctValues) {
+            try await saveBaseline(type: .deepSleepPercentage, result: baseline)
+        }
+
+        // REM Sleep % baseline
+        let remPctValues = metrics.compactMap { $0.remSleepPct }
+        if let baseline = BaselineEngine.computeBaseline(values: remPctValues) {
+            try await saveBaseline(type: .remSleepPercentage, result: baseline)
         }
 
         try modelContext.save()

@@ -24,6 +24,22 @@ final class DailyMetric {
     var sleepNeedHours: Double?
     var sleepDebtHours: Double?
     var stressAverage: Double?
+
+    // MARK: - Composite Sleep Score (research-backed)
+    /// Composite sleep score (0-100) combining sufficiency, efficiency, consistency, disturbances.
+    /// Distinct from `sleepPerformance` which is sufficiency-only (actual/need × 100).
+    var sleepScore: Double?
+    /// Bedtime/wake time consistency score (0-100). Based on 4-night std dev.
+    var sleepConsistency: Double?
+    /// Sleep efficiency: total sleep time / time in bed × 100.
+    var sleepEfficiencyPct: Double?
+    /// Restorative sleep: (deep + REM) / total sleep × 100. Target: 40-50%.
+    var restorativeSleepPct: Double?
+    /// Deep sleep as percentage of total sleep.
+    var deepSleepPct: Double?
+    /// REM sleep as percentage of total sleep.
+    var remSleepPct: Double?
+
     var isComputed: Bool
     var computedAt: Date?
     var syncedToCloud: Bool

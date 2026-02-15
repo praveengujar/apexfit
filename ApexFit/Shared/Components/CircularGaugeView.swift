@@ -7,6 +7,9 @@ struct CircularGaugeView: View {
     let unit: String
     let color: Color
     let size: GaugeSize
+    var overrideDimension: CGFloat? = nil
+    var overrideLineWidth: CGFloat? = nil
+    var showCenterText: Bool = true
 
     @State private var animatedProgress: Double = 0
 
@@ -44,6 +47,9 @@ struct CircularGaugeView: View {
         }
     }
 
+    private var effectiveDimension: CGFloat { overrideDimension ?? size.dimension }
+    private var effectiveLineWidth: CGFloat { overrideLineWidth ?? size.lineWidth }
+
     private var progress: Double {
         guard maxValue > 0 else { return 0 }
         return (value / maxValue).clamped(to: 0...1)
@@ -56,7 +62,7 @@ struct CircularGaugeView: View {
                 .trim(from: 0, to: 0.75)
                 .stroke(
                     color.opacity(0.2),
-                    style: StrokeStyle(lineWidth: size.lineWidth, lineCap: .round)
+                    style: StrokeStyle(lineWidth: effectiveLineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(135))
 
@@ -65,24 +71,26 @@ struct CircularGaugeView: View {
                 .trim(from: 0, to: animatedProgress * 0.75)
                 .stroke(
                     color,
-                    style: StrokeStyle(lineWidth: size.lineWidth, lineCap: .round)
+                    style: StrokeStyle(lineWidth: effectiveLineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(135))
                 .animation(AppTheme.animationSlow, value: animatedProgress)
 
             // Center text
-            VStack(spacing: 2) {
-                Text(displayValue)
-                    .font(size.valueFont)
-                    .foregroundStyle(color)
-                    .contentTransition(.numericText())
+            if showCenterText {
+                VStack(spacing: 2) {
+                    Text(displayValue)
+                        .font(size.valueFont)
+                        .foregroundStyle(color)
+                        .contentTransition(.numericText())
 
-                Text(label)
-                    .font(size.labelFont)
-                    .foregroundStyle(AppColors.textSecondary)
+                    Text(label)
+                        .font(size.labelFont)
+                        .foregroundStyle(AppColors.textSecondary)
+                }
             }
         }
-        .frame(width: size.dimension, height: size.dimension)
+        .frame(width: effectiveDimension, height: effectiveDimension)
         .onAppear {
             animatedProgress = progress
         }

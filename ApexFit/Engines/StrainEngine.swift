@@ -17,8 +17,8 @@ struct StrainResult {
 }
 
 struct StrainEngine {
-    private let k: Double = HealthKitConstants.strainScalingFactor
-    private let c: Double = 1.0
+    private let k: Double = ConfigurationManager.shared.config.strain.scalingFactor
+    private let c: Double = ConfigurationManager.shared.config.strain.logOffsetConstant
     private let zoneCalculator: HeartRateZoneCalculator
 
     init(maxHeartRate: Int) {
@@ -67,7 +67,7 @@ struct StrainEngine {
         for i in 0..<rawSamples.count {
             let duration: Double
             if i < rawSamples.count - 1 {
-                duration = Swift.min(rawSamples[i + 1].date.timeIntervalSince(rawSamples[i].date), 600) // Cap at 10 min
+                duration = Swift.min(rawSamples[i + 1].date.timeIntervalSince(rawSamples[i].date), ConfigurationManager.shared.config.heartRateZones.sampleMaxDurationSeconds)
             } else {
                 duration = result.last?.durationSeconds ?? 5.0
             }

@@ -21,11 +21,20 @@ actor SleepService {
         guard !samples.isEmpty else {
             dailyMetric.sleepDurationHours = nil
             dailyMetric.sleepPerformance = nil
+            dailyMetric.sleepScore = nil
+            dailyMetric.sleepConsistency = nil
+            dailyMetric.sleepEfficiencyPct = nil
+            dailyMetric.restorativeSleepPct = nil
+            dailyMetric.deepSleepPct = nil
+            dailyMetric.remSleepPct = nil
             return
         }
 
         // Get past week's sleep for debt calculation
         let pastWeekSleep = try fetchPastWeekSleep(before: date)
+
+        // Get recent bedtime/wake times for consistency calculation (4-night window)
+        let consistencyInput = try fetchSleepConsistencyData(before: date)
 
         // Analyze
         let result = SleepEngine.analyze(
@@ -33,14 +42,23 @@ actor SleepService {
             baselineSleepHours: baselineSleepHours,
             todayStrain: dailyMetric.strainScore,
             pastWeekSleepHours: pastWeekSleep.hours,
-            pastWeekSleepNeeds: pastWeekSleep.needs
+            pastWeekSleepNeeds: pastWeekSleep.needs,
+            consistencyInput: consistencyInput
         )
 
-        // Update daily metric
+        // Update daily metric — core fields
         dailyMetric.sleepDurationHours = result.totalSleepHours
         dailyMetric.sleepPerformance = result.sleepPerformance
         dailyMetric.sleepNeedHours = result.sleepNeedHours
         dailyMetric.sleepDebtHours = result.sleepDebtHours
+
+        // Update daily metric — composite sleep score fields
+        dailyMetric.sleepScore = result.sleepScore
+        dailyMetric.sleepConsistency = result.sleepConsistency
+        dailyMetric.sleepEfficiencyPct = result.sleepEfficiency
+        dailyMetric.restorativeSleepPct = result.restorativeSleepPct
+        dailyMetric.deepSleepPct = result.deepSleepPct
+        dailyMetric.remSleepPct = result.remSleepPct
 
         // Save sleep sessions
         if let mainSleep = result.mainSleep {
@@ -94,5 +112,33 @@ actor SleepService {
         }
 
         return (hours, needs)
+    }
+
+    /// Fetch recent bedtime/wake times for sleep consistency scoring.
+    /// Uses main sleep sessions from the past 4 nights.
+    private func fetchSleepConsistencyData(before date: Date) throws -> SleepConsistencyInput {
+        var bedtimes: [Date] = []
+        var wakeTimes: [Date] = []
+
+        for daysAgo in 1...4 {
+            let pastDate = date.daysAgo(daysAgo)
+            let descriptor = FetchDescriptor<DailyMetric>(
+                predicate: #Predicate { metric in
+                    metric.date == pastDate
+                }
+            )
+            if let metric = try modelContext.fetch(descriptor).first {
+                // Find main sleep session (longest)
+                let mainSession = metric.sleepSessions
+                    .filter { $0.isMainSleep }
+                    .first
+                if let session = mainSession {
+                    bedtimes.append(session.startDate)
+                    wakeTimes.append(session.endDate)
+                }
+            }
+        }
+
+        return SleepConsistencyInput(recentBedtimes: bedtimes, recentWakeTimes: wakeTimes)
     }
 }

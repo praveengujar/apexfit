@@ -28,10 +28,8 @@ targets:
       - path: Models
       - path: Services
       - path: Shared
-
-    resources:
-      - path: Resources/Assets.xcassets
-      - path: Resources/JournalBehaviors.json
+      - path: Resources
+        buildPhase: resources
 
     settings:
       base:
@@ -66,8 +64,11 @@ targets:
       - path: Engines
       - path: Core/HealthKit
       - path: Core/Extensions
+      - path: Core/Configuration
       - path: Shared/Theme
       - path: Shared/Components
+      - path: Resources/ScoringConfig.json
+        buildPhase: resources
 
     resources:
       - path: ApexFitWatch/Assets.xcassets

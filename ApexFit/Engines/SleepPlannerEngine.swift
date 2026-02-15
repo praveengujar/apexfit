@@ -6,10 +6,11 @@ enum SleepGoal: String, CaseIterable {
     case getBy
 
     var multiplier: Double {
+        let goals = ConfigurationManager.shared.config.sleepPlanner.goalMultipliers
         switch self {
-        case .peak: return 1.0
-        case .perform: return 0.85
-        case .getBy: return 0.70
+        case .peak: return goals.peak
+        case .perform: return goals.perform
+        case .getBy: return goals.getBy
         }
     }
 
