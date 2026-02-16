@@ -221,6 +221,13 @@
 		AA11BB22CC33DD44EE550003 /* AddActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550004 /* AddActivityView.swift */; };
 		AA11BB22CC33DD44EE550005 /* StartActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550006 /* StartActivityView.swift */; };
 		AA11BB22CC33DD44EE550007 /* iOSLiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550008 /* iOSLiveWorkoutView.swift */; };
+		BB11CC22DD33EE08 /* LongevityEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE01 /* LongevityEngine.swift */; };
+		BB11CC22DD33EE09 /* OrganicBlobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE02 /* OrganicBlobView.swift */; };
+		BB11CC22DD33EE10 /* LongevityGradientBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE03 /* LongevityGradientBar.swift */; };
+		BB11CC22DD33EE11 /* PaceOfAgingGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE04 /* PaceOfAgingGauge.swift */; };
+		BB11CC22DD33EE12 /* LongevityStickyHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE05 /* LongevityStickyHeader.swift */; };
+		BB11CC22DD33EE13 /* LongevityMetricCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE06 /* LongevityMetricCard.swift */; };
+		BB11CC22DD33EE14 /* LongevityDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11CC22DD33EE07 /* LongevityDashboardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -403,6 +410,13 @@
 		AA11BB22CC33DD44EE550004 /* AddActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddActivityView.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE550006 /* StartActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartActivityView.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE550008 /* iOSLiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLiveWorkoutView.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE01 /* LongevityEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongevityEngine.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE02 /* OrganicBlobView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganicBlobView.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE03 /* LongevityGradientBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongevityGradientBar.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE04 /* PaceOfAgingGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaceOfAgingGauge.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE05 /* LongevityStickyHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongevityStickyHeader.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE06 /* LongevityMetricCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongevityMetricCard.swift; sourceTree = "<group>"; };
+		BB11CC22DD33EE07 /* LongevityDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongevityDashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -483,6 +497,7 @@
 				685E370E80CC4EF275D93912 /* BaselineEngine.swift */,
 				262D19466253DC86ACCA675C /* HeartRateZoneCalculator.swift */,
 				6B311B378CEAB5D39D8CE067 /* HRVCalculator.swift */,
+				BB11CC22DD33EE01 /* LongevityEngine.swift */,
 				3B4469F355732C2062A8EBA9 /* MuscularLoadEngine.swift */,
 				3916C84CC3729B3954799367 /* RecoveryEngine.swift */,
 				F61257DEE65F763AD91D386B /* SleepEngine.swift */,
@@ -499,6 +514,7 @@
 				AA11BB22CC33DD44EE550009 /* Activity */,
 				D618453FCF2F9784D9F66AA5 /* Home */,
 				769B4E4F0F298EED66D73D66 /* Journal */,
+				BB11CC22DD33EE15 /* Longevity */,
 				777A0AF50FC0E2DA778A59B8 /* Onboarding */,
 				751BBB7CCCA6F1047A0F3D14 /* Recovery */,
 				0F6C8053877EE66816AE6632 /* Settings */,
@@ -518,6 +534,14 @@
 				AA11BB22CC33DD44EE550006 /* StartActivityView.swift */,
 			);
 			path = Activity;
+			sourceTree = "<group>";
+		};
+		BB11CC22DD33EE15 /* Longevity */ = {
+			isa = PBXGroup;
+			children = (
+				BB11CC22DD33EE07 /* LongevityDashboardView.swift */,
+			);
+			path = Longevity;
 			sourceTree = "<group>";
 		};
 		53BF44FBE3CE3123DFDE6B6D /* ApexFitWatch */ = {
@@ -803,8 +827,13 @@
 				557EF8D20F8B5A61A95144E9 /* HealthMonitorCard.swift */,
 				8AE4F59153A0A61844305673 /* JournalWeekCard.swift */,
 				3C72F3DDA0A58938A3C82FB7 /* LoadingStateView.swift */,
+				BB11CC22DD33EE03 /* LongevityGradientBar.swift */,
+				BB11CC22DD33EE06 /* LongevityMetricCard.swift */,
+				BB11CC22DD33EE05 /* LongevityStickyHeader.swift */,
 				740685481F2AF0350359F6CE /* MetricTile.swift */,
 				537E8C9DCF55FACF4D4462BE /* MyPlanCard.swift */,
+				BB11CC22DD33EE02 /* OrganicBlobView.swift */,
+				BB11CC22DD33EE04 /* PaceOfAgingGauge.swift */,
 				97459588E6984E568CF40753 /* StickyGaugeHeader.swift */,
 				2222638F625683AA2DBF49BE /* StressChartCard.swift */,
 				57E6CC27C75B3630ADDCBA30 /* StressMonitorCard.swift */,
@@ -1027,6 +1056,11 @@
 				DC19B69D4508E36B45E918B6 /* JournalSetupView.swift in Sources */,
 				CE309B33ED34947BE4A66D0B /* JournalWeekCard.swift in Sources */,
 				CDED7A3D8FA50D7B88678C32 /* LoadingStateView.swift in Sources */,
+				BB11CC22DD33EE14 /* LongevityDashboardView.swift in Sources */,
+				BB11CC22DD33EE08 /* LongevityEngine.swift in Sources */,
+				BB11CC22DD33EE10 /* LongevityGradientBar.swift in Sources */,
+				BB11CC22DD33EE13 /* LongevityMetricCard.swift in Sources */,
+				BB11CC22DD33EE12 /* LongevityStickyHeader.swift in Sources */,
 				699148E61A1E2F05660FD548 /* MainTabView.swift in Sources */,
 				FA40064B5AAABBB6E6FEEC37 /* MaxHRSettingsView.swift in Sources */,
 				FCA3194ADE5E0C7E1BD12F20 /* MetricComputationService.swift in Sources */,
@@ -1042,6 +1076,8 @@
 				7EBD4D15D1F7C211C699DE4A /* NotificationSettingsView.swift in Sources */,
 				DC2A52A524958A9DB42297C0 /* OnboardingCompleteView.swift in Sources */,
 				0029AEC4C2E7F96B473DD61A /* OnboardingFlowView.swift in Sources */,
+				BB11CC22DD33EE09 /* OrganicBlobView.swift in Sources */,
+				BB11CC22DD33EE11 /* PaceOfAgingGauge.swift in Sources */,
 				0000C70063356BEC497E302E /* PeriodPicker.swift in Sources */,
 				2CD8B5AF78E9F1618313881E /* ProfileSetupView.swift in Sources */,
 				80E161C069BAFD118C6BAFC2 /* RecoveryContributorsView.swift in Sources */,

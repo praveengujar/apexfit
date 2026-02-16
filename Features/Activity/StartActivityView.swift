@@ -143,9 +143,7 @@ struct StartActivityView: View {
                 timer.invalidate()
                 countdown = nil
                 showLiveWorkout = true
-                Task {
-                    try? await workoutManager.startWorkout(type: type)
-                }
+                workoutManager.startWorkout(type: type)
             }
         }
     }
@@ -153,8 +151,8 @@ struct StartActivityView: View {
     // MARK: - End Workout
 
     private func endWorkout() {
-        Task {
-            await workoutManager.endWorkout()
+        workoutManager.endWorkout()
+        Task { @MainActor in
 
             let record = WorkoutRecord(
                 workoutType: String(workoutManager.selectedWorkoutType.rawValue),
