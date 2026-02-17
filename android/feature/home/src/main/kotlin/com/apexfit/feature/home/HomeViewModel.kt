@@ -21,6 +21,7 @@ data class HomeUiState(
     val weekMetrics: List<DailyMetricEntity> = emptyList(),
     val todayWorkouts: List<WorkoutRecordEntity> = emptyList(),
     val selectedDate: LocalDate = LocalDate.now(),
+    val streak: Int = 0,
 )
 
 @HiltViewModel
@@ -34,7 +35,8 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = combine(
         _selectedDate,
         dailyMetricRepo.observeRecent(7),
-    ) { date, recentMetrics ->
+        dailyMetricRepo.observeRecent(365),
+    ) { date, recentMetrics, allMetrics ->
         val dateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val todayMetric = recentMetrics.find { it.date == dateMillis }
 
@@ -42,6 +44,7 @@ class HomeViewModel @Inject constructor(
             todayMetric = todayMetric,
             weekMetrics = recentMetrics,
             selectedDate = date,
+            streak = computeStreak(allMetrics),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -64,5 +67,25 @@ class HomeViewModel @Inject constructor(
     fun rhrBaseline(): Double? {
         val values = uiState.value.weekMetrics.mapNotNull { it.restingHeartRate }
         return if (values.isEmpty()) null else values.average()
+    }
+
+    private fun computeStreak(metrics: List<DailyMetricEntity>): Int {
+        if (metrics.isEmpty()) return 0
+        val zone = ZoneId.systemDefault()
+        val sortedDates = metrics
+            .map { java.time.Instant.ofEpochMilli(it.date).atZone(zone).toLocalDate() }
+            .distinct()
+            .sortedDescending()
+        var streak = 0
+        var expected = LocalDate.now()
+        for (date in sortedDates) {
+            if (date == expected) {
+                streak++
+                expected = expected.minusDays(1)
+            } else if (date.isBefore(expected)) {
+                break
+            }
+        }
+        return streak
     }
 }

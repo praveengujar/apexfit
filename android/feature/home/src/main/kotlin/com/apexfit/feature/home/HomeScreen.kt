@@ -73,6 +73,7 @@ fun HomeScreen(
     onAddActivityTap: () -> Unit = {},
     onStartActivityTap: () -> Unit = {},
     onSettingsTap: () -> Unit = {},
+    onProfileTap: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -84,14 +85,16 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = Spacing.md),
     ) {
-        Spacer(Modifier.height(Spacing.md))
+        Spacer(Modifier.height(Spacing.sm))
 
-        // Date Navigation Header
+        // Date Navigation Header (profile avatar + streak + date nav + watch)
         DateNavigationHeader(
             date = uiState.selectedDate,
             isToday = uiState.selectedDate == LocalDate.now(),
+            streak = uiState.streak,
             onPreviousDay = { viewModel.navigateDate(-1) },
             onNextDay = { viewModel.navigateDate(1) },
+            onProfileTap = onProfileTap,
         )
 
         Spacer(Modifier.height(Spacing.md))

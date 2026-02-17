@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA10010101010101010101AB /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020101010101010101AB /* ProfileView.swift */; };
+		AA10010202020202020202AB /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020202020202020202AB /* ProfileHeaderView.swift */; };
+		AA10010303030303030303AB /* AchievementCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020303030303030303AB /* AchievementCardsView.swift */; };
+		AA10010404040404040404AB /* DayStreakView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020404040404040404AB /* DayStreakView.swift */; };
+		AA10010505050505050505AB /* ProfileTimePeriodPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020505050505050505AB /* ProfileTimePeriodPicker.swift */; };
+		AA10010606060606060606AB /* DataHighlightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020606060606060606AB /* DataHighlightsView.swift */; };
+		AA10010707070707070707AB /* StreaksSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020707070707070707AB /* StreaksSectionView.swift */; };
+		AA10010808080808080808AB /* NotableStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020808080808080808AB /* NotableStatsView.swift */; };
+		AA10010909090909090909AB /* ActivitySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10020909090909090909AB /* ActivitySummaryView.swift */; };
 		0000C70063356BEC497E302E /* PeriodPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDFB786699918D8A5825102 /* PeriodPicker.swift */; };
 		0029AEC4C2E7F96B473DD61A /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BAE2F438DFC78B69C84C70 /* OnboardingFlowView.swift */; };
 		0061197F005090CE566093E8 /* BreathworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA694FFB083466ECF78B24C7 /* BreathworkView.swift */; };
@@ -258,6 +267,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA10020101010101010101AB /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		AA10020202020202020202AB /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
+		AA10020303030303030303AB /* AchievementCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementCardsView.swift; sourceTree = "<group>"; };
+		AA10020404040404040404AB /* DayStreakView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStreakView.swift; sourceTree = "<group>"; };
+		AA10020505050505050505AB /* ProfileTimePeriodPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTimePeriodPicker.swift; sourceTree = "<group>"; };
+		AA10020606060606060606AB /* DataHighlightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataHighlightsView.swift; sourceTree = "<group>"; };
+		AA10020707070707070707AB /* StreaksSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreaksSectionView.swift; sourceTree = "<group>"; };
+		AA10020808080808080808AB /* NotableStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotableStatsView.swift; sourceTree = "<group>"; };
+		AA10020909090909090909AB /* ActivitySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySummaryView.swift; sourceTree = "<group>"; };
 		02A7AD186B684A770B9F35E5 /* AppIcon1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon1024.png; sourceTree = "<group>"; };
 		0448E932727392637A80A652 /* KMPEngineAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KMPEngineAdapters.swift; sourceTree = "<group>"; };
 		07BAE2F438DFC78B69C84C70 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
@@ -536,6 +554,30 @@
 			path = Engines;
 			sourceTree = "<group>";
 		};
+		AA10030101010101010101AB /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA10020303030303030303AB /* AchievementCardsView.swift */,
+				AA10020909090909090909AB /* ActivitySummaryView.swift */,
+				AA10020606060606060606AB /* DataHighlightsView.swift */,
+				AA10020404040404040404AB /* DayStreakView.swift */,
+				AA10020808080808080808AB /* NotableStatsView.swift */,
+				AA10020202020202020202AB /* ProfileHeaderView.swift */,
+				AA10020505050505050505AB /* ProfileTimePeriodPicker.swift */,
+				AA10020707070707070707AB /* StreaksSectionView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AA10030202020202020202AB /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				AA10030101010101010101AB /* Components */,
+				AA10020101010101010101AB /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
 		52B2AD5DCA32DC2E620026BE /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -544,6 +586,7 @@
 				769B4E4F0F298EED66D73D66 /* Journal */,
 				C610C88C45DB7802135D9F27 /* Longevity */,
 				777A0AF50FC0E2DA778A59B8 /* Onboarding */,
+				AA10030202020202020202AB /* Profile */,
 				751BBB7CCCA6F1047A0F3D14 /* Recovery */,
 				0F6C8053877EE66816AE6632 /* Settings */,
 				6D861BBE2C28DF0014B6B860 /* Sleep */,
@@ -1173,6 +1216,15 @@
 				039D7D135ED60E485F47DE8E /* OrganicBlobView.swift in Sources */,
 				9FCB3940847CAD0D8F29432F /* PaceOfAgingGauge.swift in Sources */,
 				0000C70063356BEC497E302E /* PeriodPicker.swift in Sources */,
+				AA10010101010101010101AB /* ProfileView.swift in Sources */,
+				AA10010202020202020202AB /* ProfileHeaderView.swift in Sources */,
+				AA10010303030303030303AB /* AchievementCardsView.swift in Sources */,
+				AA10010404040404040404AB /* DayStreakView.swift in Sources */,
+				AA10010505050505050505AB /* ProfileTimePeriodPicker.swift in Sources */,
+				AA10010606060606060606AB /* DataHighlightsView.swift in Sources */,
+				AA10010707070707070707AB /* StreaksSectionView.swift in Sources */,
+				AA10010808080808080808AB /* NotableStatsView.swift in Sources */,
+				AA10010909090909090909AB /* ActivitySummaryView.swift in Sources */,
 				2CD8B5AF78E9F1618313881E /* ProfileSetupView.swift in Sources */,
 				80E161C069BAFD118C6BAFC2 /* RecoveryContributorsView.swift in Sources */,
 				ED409C095C9B4ADA1D6B38DB /* RecoveryDashboardView.swift in Sources */,

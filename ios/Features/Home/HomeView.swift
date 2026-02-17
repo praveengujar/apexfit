@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var showStrainDashboard = false
     @State private var showAddActivity = false
     @State private var showStartActivity = false
+    @State private var showProfile = false
     @State private var gaugeRowInitialOffset: CGFloat? = nil
     @State private var gaugeRowCurrentOffset: CGFloat = 0
 
@@ -55,7 +56,7 @@ struct HomeView: View {
                 ScrollView {
                     VStack(spacing: AppTheme.spacingMD) {
                         // 1. Header Bar
-                        DateNavigationHeader(selectedDate: $selectedDate, streak: journalStreak)
+                        DateNavigationHeader(selectedDate: $selectedDate, streak: journalStreak, onProfileTap: { showProfile = true })
 
                         // 2. Three Equal Gauges
                         DashboardGaugeRow(
@@ -162,6 +163,9 @@ struct HomeView: View {
             }
             .navigationDestination(isPresented: $showStrainDashboard) {
                 StrainDashboardView()
+            }
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView()
             }
             .sheet(isPresented: $showAddActivity) {
                 AddActivityView()

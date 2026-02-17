@@ -45,6 +45,7 @@ import com.apexfit.feature.journal.JournalHistoryScreen
 import com.apexfit.feature.journal.JournalImpactScreen
 import com.apexfit.feature.journal.JournalSetupEditScreen
 import com.apexfit.feature.onboarding.OnboardingScreen
+import com.apexfit.feature.profile.ProfileScreen
 import com.apexfit.feature.recovery.RecoveryDashboardScreen
 import com.apexfit.feature.settings.AboutScreen
 import com.apexfit.feature.settings.HealthConnectStatusScreen
@@ -189,6 +190,9 @@ private fun MainTabScaffold() {
                 "settings_units" -> UnitSettingsScreen()
                 "settings_health_connect" -> HealthConnectStatusScreen()
                 "settings_about" -> AboutScreen()
+                "profile" -> ProfileScreen(
+                    onBack = { detailScreen = null },
+                )
                 else -> {
                     when (selectedTab) {
                         0 -> HomeScreen(
@@ -200,6 +204,7 @@ private fun MainTabScaffold() {
                             onAddActivityTap = { detailScreen = "add_activity" },
                             onStartActivityTap = { detailScreen = "start_activity" },
                             onSettingsTap = { detailScreen = "settings" },
+                            onProfileTap = { detailScreen = "profile" },
                         )
                         1 -> LongevityDashboardScreen()
                         2 -> {

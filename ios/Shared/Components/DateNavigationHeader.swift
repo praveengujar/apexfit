@@ -3,14 +3,19 @@ import SwiftUI
 struct DateNavigationHeader: View {
     @Binding var selectedDate: Date
     let streak: Int
+    var onProfileTap: (() -> Void)? = nil
 
     var body: some View {
         HStack {
             // MARK: - Left: Avatar + Streak
             HStack(spacing: AppTheme.spacingSM) {
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(AppColors.textTertiary)
+                Button {
+                    onProfileTap?()
+                } label: {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(AppColors.textTertiary)
+                }
 
                 HStack(spacing: AppTheme.spacingXS) {
                     Image(systemName: "flame.fill")
