@@ -1,9 +1,0 @@
-{
-  "tiers": {
-    "simple": { "estimate": 0.05, "actuals": [], "lastCalibrated": null },
-    "medium": { "estimate": 0.25, "actuals": [], "lastCalibrated": null },
-    "complex": { "estimate": 0.50, "actuals": [], "lastCalibrated": null }
-  },
-  "version": 1,
-  "createdAt": null
-}
