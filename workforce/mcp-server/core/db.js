@@ -165,6 +165,17 @@ function _applySchema(db) {
     db.prepare('INSERT INTO schema_migrations (version, appliedAt) VALUES (?, ?)').run(3, new Date().toISOString());
     console.error('[db] Applied migration 3: budgets + cost_history tables');
   }
+
+  // Migration 4: experiment support columns on tasks
+  const m4 = db.prepare('SELECT version FROM schema_migrations WHERE version = 4').get();
+  if (!m4) {
+    try {
+      db.exec("ALTER TABLE tasks ADD COLUMN taskType TEXT DEFAULT 'standard'");
+      db.exec("ALTER TABLE tasks ADD COLUMN experimentConfig TEXT");
+    } catch { /* columns may already exist */ }
+    db.prepare('INSERT INTO schema_migrations (version, appliedAt) VALUES (?, ?)').run(4, new Date().toISOString());
+    console.error('[db] Applied migration 4: experiment columns on tasks');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +207,7 @@ const TASK_COLUMNS = new Set([
   'maxRetries', 'pinned', 'needsInput', 'exitCode', 'cost',
   'createdAt', 'startedAt', 'completedAt', 'archivedAt',
   'tmuxSession', 'autoMerge', 'profile',
+  'taskType', 'experimentConfig',
 ]);
 
 export function updateTask(id, updates) {

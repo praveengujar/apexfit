@@ -3,7 +3,7 @@
 /**
  * Workforce MCP Server — stdio transport.
  *
- * Exposes 20 tools for managing autonomous Claude Code agent sessions.
+ * Exposes 30 tools for managing autonomous Claude Code agent sessions.
  * Replaces the Express+WebSocket backend with a single MCP server process.
  */
 
@@ -49,6 +49,13 @@ import {
   setBudgetHandler, getBudgetHandler,
   setCostPolicyHandler, getCostPolicyHandler,
 } from './tools/budget-tools.js';
+
+import {
+  createExperimentHandler, experimentStatusHandler,
+  stopExperimentHandler, listExperimentsHandler,
+} from './tools/experiment-tools.js';
+
+import { setExperimentProjectDir } from './core/experiment-runner.js';
 
 import { startCostWatchdog, manualCostWatchdogScan } from './core/cost-watchdog.js';
 import { readCostLog, getCostLogSummary } from './core/cost-tracker.js';
@@ -377,6 +384,49 @@ server.tool(
 );
 
 // ---------------------------------------------------------------------------
+// Experiment Tools
+// ---------------------------------------------------------------------------
+
+server.tool(
+  'workforce_create_experiment',
+  'Create and start an iterative experiment. The agent modifies code, measures a metric, keeps improvements, reverts failures. Repeats until target, max iterations, or budget is hit.',
+  {
+    prompt: z.string().describe('Research objective — what to optimize'),
+    project: z.string().optional().describe('Project name'),
+    measure_command: z.string().describe('Shell command to measure results (e.g., "npm test", "python train.py")'),
+    metric_pattern: z.string().describe('Regex with capture group to extract metric from command output (e.g., "val_bpb: ([0-9.]+)")'),
+    metric_name: z.string().describe('Human name for the metric (e.g., "val_bpb", "test_pass_rate")'),
+    direction: z.enum(['minimize', 'maximize']).describe('Whether to minimize or maximize the metric'),
+    target_value: z.number().optional().describe('Stop early when this metric value is reached'),
+    max_iterations: z.number().optional().describe('Max experiment iterations (default: 20)'),
+    iteration_timeout_ms: z.number().optional().describe('Per-iteration timeout in ms (default: 300000 = 5 min)'),
+    budget_limit: z.number().optional().describe('Max total cost in dollars for all iterations'),
+  },
+  wrap(createExperimentHandler),
+);
+
+server.tool(
+  'workforce_experiment_status',
+  'Get experiment status with iteration history, metric trend, and cost.',
+  { experiment_id: z.string().describe('Experiment ID') },
+  wrapFormatted(experimentStatusHandler),
+);
+
+server.tool(
+  'workforce_stop_experiment',
+  'Stop a running experiment after the current iteration finishes.',
+  { experiment_id: z.string().describe('Experiment ID to stop') },
+  wrap(stopExperimentHandler),
+);
+
+server.tool(
+  'workforce_list_experiments',
+  'List all experiments with status summary.',
+  {},
+  wrapFormatted(listExperimentsHandler),
+);
+
+// ---------------------------------------------------------------------------
 // Initialization and startup
 // ---------------------------------------------------------------------------
 
@@ -397,6 +447,7 @@ async function main() {
   // 3. Set project directory for all modules
   setRecoveryProjectDir(projectDir);
   setLifecycleProjectDir(projectDir);
+  setExperimentProjectDir(projectDir);
 
   // 4. Initialize worker manager (starts promote loop)
   initWorkerManager(projectDir);
