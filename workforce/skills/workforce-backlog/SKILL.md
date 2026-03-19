@@ -3,41 +3,52 @@ name: workforce-backlog
 description: Manage the task backlog — add, update, remove, reorder, and analyze backlog items. Use when user wants to plan work for agents.
 ---
 
-When the user invokes /workforce-backlog, provide full backlog management.
+When the user invokes /workforce-backlog, show the backlog and handle management actions.
 
-## Capabilities
+## Steps
 
-### View backlog
-Call `workforce_backlog_list` and display items sorted by current order:
-- Priority badge (high/medium/low)
-- Title and description
-- Created date
+1. Call `workforce_backlog_list` to get current items
+2. Display the backlog using the template below
+3. Wait for user action (add, remove, reorder, analyze, launch)
 
-### Add item
-Call `workforce_backlog_add` with title, description, priority.
+## Actions
 
-### Update item
-Call `workforce_backlog_update` with id and changed fields.
+- **add**: Call `workforce_backlog_add` — user says "add: implement dark mode" or similar
+- **remove**: Call `workforce_backlog_delete` — user says "remove #3" or "delete the last one"
+- **update**: Call `workforce_backlog_update` — user says "change #2 priority to high"
+- **reorder**: Call `workforce_backlog_reorder` — user says "move #4 to top"
+- **analyze**: Use your own reasoning to stack-rank by impact/urgency, suggest combinations or splits
+- **launch**: Call `workforce_create_task` with the item's title+description as the prompt — user says "launch #1" or "launch top 3"
 
-### Remove item
-Call `workforce_backlog_delete` with id.
+## Formatting Rules
 
-### Reorder
-Call `workforce_backlog_reorder` with the new order array of IDs.
+- **Priority indicators**: `▲ HIGH` (urgent), `■ MEDIUM` (standard), `▼ LOW` (backlog)
+- **Numbering**: 1-based, matches display order
+- **Description**: Show on second line, indented, in quotes. Truncate at 60 chars.
+- **Empty backlog**: Show "Backlog is empty. Say 'add: {description}' to create an item."
 
-### Analyze and prioritize
-Since you ARE Claude, you can directly analyze the backlog:
-- Stack-rank items by impact and urgency
-- Identify items that can be combined or split
-- Suggest which items to launch as agent tasks next
-- Estimate complexity and cost for each item
+## Template
 
-### Launch from backlog
-If the user wants to launch a backlog item as a task, use the prompt from the backlog item and call `workforce_create_task`.
+```
+━━━ BACKLOG ({count} items) ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ 1. {▲|■|▼} {HIGH|MEDIUM|LOW}    {title}
+              "{description_60}..."
+ 2. {▲|■|▼} {HIGH|MEDIUM|LOW}    {title}
+              "{description_60}..."
+ 3. ...
+
+➤ add, remove #, reorder, analyze, launch #
+```
 
 ## Conversation Style
-Be conversational. The user can say things like:
-- "add: implement dark mode support" → add item
-- "remove the second one" → delete by position
-- "what should we work on next?" → analyze and recommend
-- "launch the top 3" → create tasks from top items
+
+Be conversational after showing the backlog. The user can:
+- `"add: implement rate limiting"` — add with medium priority (default)
+- `"remove #2"` — delete item at position 2
+- `"what should we work on next?"` — analyze and recommend top pick with reasoning
+- `"launch #1 and #3"` — create tasks from those items
+- `"move #4 to #1"` — reorder
+- `"set #3 to high priority"` — update priority
+
+After any mutation, re-display the updated backlog.

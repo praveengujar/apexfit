@@ -3,37 +3,51 @@ name: workforce-launch
 description: Launch a new autonomous agent task. Validates the prompt, estimates cost, optionally decomposes complex tasks, and creates the task. Use when user wants to spawn an agent.
 ---
 
-When the user invokes /workforce-launch, guide them through creating a new autonomous task.
+When the user invokes /workforce-launch, create a new autonomous task with minimal friction.
 
 ## Steps
 
 1. If the user provided a prompt in the invocation, use it. Otherwise ask for the task prompt.
 
-2. Call `workforce_analyze_prompt` with the prompt to check:
-   - Is the prompt too short? Too long? Too vague?
-   - What tier is it (simple/medium/complex)?
-   - What's the estimated cost?
+2. Call `workforce_analyze_prompt` with the prompt to check admission, tier, and cost.
 
-3. If the analysis says the prompt is NOT admitted (too broad, too vague, too short):
-   - Show the reason and suggestions
-   - Offer to refine the prompt (you can refine it yourself — you ARE Claude)
-   - Offer to decompose it into subtasks via /workforce-decompose
+3. **If NOT admitted** (too broad, too vague, too short):
+   - Show the rejection reason and offer to refine it yourself or decompose via /workforce-decompose
 
-4. If the analysis says the prompt IS admitted:
-   - Show the tier and estimated cost
-   - Ask if the user wants auto-merge on completion, or manual review
-   - Ask for project name (optional)
-
-5. Call `workforce_create_task` with:
+4. **If admitted**: Call `workforce_create_task` with:
    - prompt: the final prompt
-   - project: user-specified or derived from current directory name
-   - autoMerge: based on user preference (default: false for review)
+   - project: derive from current directory name unless user specifies one
+   - autoMerge: default false (manual review)
+   Show the launch card.
 
-6. Confirm the task was created with its ID and estimated start time.
+## Formatting Rules
 
-## Prompt Refinement
+- **Tier indicator**: `○` simple, `●` medium, `◉` complex
+- **Do not ask unnecessary questions** — use sensible defaults (project = cwd basename, autoMerge = false). Only ask if ambiguous.
+- Since you ARE Claude, you can refine vague prompts directly — make them specific (name files, functions, expected behavior).
 
-Since you ARE Claude, you can refine prompts directly instead of calling an external API:
-- Make vague prompts specific (name files, functions, behavior)
-- Break compound requests into focused tasks
-- Add constraints that help the agent succeed (e.g., "only modify files in src/components/")
+## Template — Successful Launch
+
+```
+  ┌─ LAUNCH ───────────────────────────────────────────┐
+  │ Prompt:  {full prompt text}                        │
+  │ Tier:    {indicator} {tier}   Cost: ~${est}        │
+  │ Project: {project}   Review: manual                │
+  └────────────────────────────────────────────────────┘
+  ✓ Task {id_8} created — {position_msg}
+```
+
+Where `{position_msg}` is either `running now (slot X/{max})` if it started immediately, or `position {N} in queue` if pending.
+
+## Template — Rejected Prompt
+
+```
+  ┌─ LAUNCH ───────────────────────────────────────────┐
+  │ ✗ {reason}                                         │
+  │ Suggestions:                                       │
+  │   • {suggestion_1}                                 │
+  │   • {suggestion_2}                                 │
+  └────────────────────────────────────────────────────┘
+```
+
+Then offer: "Want me to refine this prompt, or decompose it into subtasks?"
