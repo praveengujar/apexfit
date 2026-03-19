@@ -5,7 +5,7 @@ Claude Code plugin for managing autonomous agent sessions.
 ## Usage
 
 ```bash
-claude --plugin-dir ./workforce   # Load as Claude Code plugin
+claude --plugin-dir .   # Load this directory as a Claude Code plugin
 ```
 
 ## Stack
@@ -18,16 +18,15 @@ claude --plugin-dir ./workforce   # Load as Claude Code plugin
 
 ## Architecture
 
-- `workforce/` — Plugin root
-  - `mcp-server/` — Node.js MCP server (stdio transport)
-    - `core/` — DB, worker manager, recovery engine, cost model, tmux, profiles
-    - `tools/` — Task, lifecycle, backlog, monitoring tool handlers
-    - `config/` — Defaults, metrics targets
-  - `skills/` — 6 SKILL.md files (slash commands)
-  - `agents/` — 2 agent definitions
-  - `hooks/` — SessionStart cleanup
-  - `.claude-plugin/plugin.json` — Plugin manifest
-  - `.mcp.json` — MCP server config
+- `.claude-plugin/plugin.json` — Plugin manifest
+- `.mcp.json` — MCP server config
+- `mcp-server/` — Node.js MCP server (stdio transport)
+  - `core/` — DB, worker manager, recovery engine, cost model, tmux, profiles
+  - `tools/` — Task, lifecycle, backlog, monitoring tool handlers
+  - `config/` — Defaults, metrics targets
+- `skills/` — 6 SKILL.md files (slash commands)
+- `agents/` — 2 agent definitions
+- `hooks/` — SessionStart cleanup
 
 ## Task lifecycle
 

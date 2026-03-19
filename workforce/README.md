@@ -15,13 +15,13 @@ Workforce lets you run multiple Claude Code agents in parallel, each working on 
 ## Install
 
 ```bash
-claude --plugin-dir /path/to/workforce/workforce
+claude --plugin-dir /path/to/workforce
 ```
 
 Or for permanent installation:
 
 ```bash
-claude plugin install /path/to/workforce/workforce --scope user
+claude plugin install /path/to/workforce --scope user
 ```
 
 ## Quick start
@@ -85,9 +85,10 @@ Tracks actual costs per tier. When the observed median drifts >15% from the esti
 ## Architecture
 
 ```
-workforce/
 ├── .claude-plugin/plugin.json     # Plugin manifest
 ├── .mcp.json                      # MCP server config (stdio transport)
+├── CLAUDE.md                      # Project instructions
+├── README.md
 ├── mcp-server/
 │   ├── index.js                   # Entry point — registers 20 MCP tools
 │   ├── package.json               # Dependencies (@modelcontextprotocol/sdk)
