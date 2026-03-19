@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "default": {
+      "command": "claude",
+      "args": ["--print", "--dangerously-skip-permissions"],
+      "description": "Claude Code (auto-accept)",
+      "passPromptVia": "arg"
+    },
+    "interactive": {
+      "command": "claude",
+      "args": [],
+      "description": "Claude Code (interactive)",
+      "passPromptVia": "none"
+    }
+  }
+}
