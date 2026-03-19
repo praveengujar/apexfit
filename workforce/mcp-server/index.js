@@ -12,7 +12,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 
 // Core modules
-import { getDb } from './core/db.js';
+import { getDb, getBudget, setBudget, getCostForPeriod } from './core/db.js';
 import { loadCostModel } from './core/cost-model.js';
 import { loadProfiles } from './core/profiles.js';
 import { startRecoveryEngine, setProjectDir as setRecoveryProjectDir } from './core/recovery-engine.js';
@@ -41,6 +41,18 @@ import {
   listProfilesHandler, runRecoveryHandler,
 } from './tools/monitoring-tools.js';
 
+import {
+  formatTaskList, formatHealthMetrics, formatCostSummary,
+} from './tools/formatters.js';
+
+import {
+  setBudgetHandler, getBudgetHandler,
+  setCostPolicyHandler, getCostPolicyHandler,
+} from './tools/budget-tools.js';
+
+import { startCostWatchdog, manualCostWatchdogScan } from './core/cost-watchdog.js';
+import { readCostLog, getCostLogSummary } from './core/cost-tracker.js';
+
 // ---------------------------------------------------------------------------
 // Server setup
 // ---------------------------------------------------------------------------
@@ -55,6 +67,18 @@ function wrap(handler) {
     try {
       const result = await handler(params);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: 'text', text: `Error: ${err.message}` }], isError: true };
+    }
+  };
+}
+
+// Helper: wrap handler that returns pre-formatted text (no JSON.stringify)
+function wrapFormatted(handler) {
+  return async (params) => {
+    try {
+      const result = await handler(params);
+      return { content: [{ type: 'text', text: result }] };
     } catch (err) {
       return { content: [{ type: 'text', text: `Error: ${err.message}` }], isError: true };
     }
@@ -76,7 +100,10 @@ server.tool(
   'workforce_list_tasks',
   'List all active tasks with status, project, and timing info.',
   { status_filter: z.string().optional().describe('Filter by status (pending/running/review/done/failed)'), include_archived: z.boolean().optional().describe('Include archived tasks') },
-  wrap(listTasksHandler),
+  wrapFormatted(async (params) => {
+    const tasks = listTasksHandler(params);
+    return formatTaskList(tasks);
+  }),
 );
 
 server.tool(
@@ -207,14 +234,146 @@ server.tool(
   'workforce_health_metrics',
   'Get workforce health metrics: success rate, failure rate, one-shot rate, suggestions.',
   {},
-  wrap(healthMetricsHandler),
+  wrapFormatted(async () => {
+    const metrics = healthMetricsHandler();
+    const costData = costSummaryHandler();
+    return formatHealthMetrics(metrics, costData);
+  }),
 );
 
 server.tool(
   'workforce_cost_summary',
   'Get cost summary: today, this week, this month, breakdown by tier.',
   {},
-  wrap(costSummaryHandler),
+  wrapFormatted(async () => {
+    const costData = costSummaryHandler();
+    // Attach budget info if available
+    const budget = getBudget('global');
+    if (budget) {
+      costData.budget = budget;
+    }
+    return formatCostSummary(costData);
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// Budget Tools
+// ---------------------------------------------------------------------------
+
+server.tool(
+  'workforce_set_budget',
+  'Set spending limits for the workforce. Scope can be "global" or a project name.',
+  {
+    scope: z.string().optional().describe('Budget scope: "global" (default) or project name'),
+    daily_limit: z.number().optional().describe('Daily spending limit in dollars'),
+    weekly_limit: z.number().optional().describe('Weekly spending limit in dollars'),
+    monthly_limit: z.number().optional().describe('Monthly spending limit in dollars'),
+  },
+  wrap(({ scope, daily_limit, weekly_limit, monthly_limit }) => {
+    const budgetScope = scope || 'global';
+    if (daily_limit == null && weekly_limit == null && monthly_limit == null) {
+      throw new Error('At least one limit (daily_limit, weekly_limit, or monthly_limit) is required');
+    }
+    const budget = setBudget(budgetScope, {
+      dailyLimit: daily_limit,
+      weeklyLimit: weekly_limit,
+      monthlyLimit: monthly_limit,
+    });
+    return budget;
+  }),
+);
+
+server.tool(
+  'workforce_get_budget',
+  'Get budget limits and current spend for a scope.',
+  {
+    scope: z.string().optional().describe('Budget scope: "global" (default) or project name'),
+  },
+  wrap(({ scope }) => {
+    const budgetScope = scope || 'global';
+    const budget = getBudget(budgetScope);
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()).toISOString();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+
+    const todaySpend = getCostForPeriod(budgetScope, startOfToday, endOfDay);
+    const weekSpend = getCostForPeriod(budgetScope, startOfWeek, endOfDay);
+    const monthSpend = getCostForPeriod(budgetScope, startOfMonth, endOfDay);
+
+    return {
+      scope: budgetScope,
+      budget: budget || { dailyLimit: null, weeklyLimit: null, monthlyLimit: null },
+      currentSpend: {
+        today: Math.round(todaySpend * 100) / 100,
+        thisWeek: Math.round(weekSpend * 100) / 100,
+        thisMonth: Math.round(monthSpend * 100) / 100,
+      },
+      remaining: {
+        daily: budget?.dailyLimit != null ? Math.round((budget.dailyLimit - todaySpend) * 100) / 100 : null,
+        weekly: budget?.weeklyLimit != null ? Math.round((budget.weeklyLimit - weekSpend) * 100) / 100 : null,
+        monthly: budget?.monthlyLimit != null ? Math.round((budget.monthlyLimit - monthSpend) * 100) / 100 : null,
+      },
+    };
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// Cost Policy Tools (Phase 2)
+// ---------------------------------------------------------------------------
+
+server.tool(
+  'workforce_set_cost_policy',
+  'Configure cost approval policy: thresholds for auto-approve, confirmation, and hard reject.',
+  {
+    approval_threshold: z.number().optional().describe('Tasks above this cost need confirmation (default: $0.50)'),
+    daily_auto_approve_limit: z.number().optional().describe('Auto-approve if daily total stays under this (default: $5.00)'),
+    per_task_max: z.number().optional().describe('Hard reject tasks above this cost (default: $2.00)'),
+    enabled: z.boolean().optional().describe('Enable/disable cost policy'),
+  },
+  wrap(setCostPolicyHandler),
+);
+
+server.tool(
+  'workforce_get_cost_policy',
+  'Get current cost approval policy configuration.',
+  {},
+  wrap(getCostPolicyHandler),
+);
+
+// ---------------------------------------------------------------------------
+// Cost Monitoring Tools (Phase 3)
+// ---------------------------------------------------------------------------
+
+server.tool(
+  'workforce_cost_watchdog_scan',
+  'Manually trigger a cost watchdog scan across all running tasks. Returns any actions taken (warnings or kills).',
+  {},
+  wrap(async () => {
+    const actions = manualCostWatchdogScan();
+    return {
+      scannedAt: new Date().toISOString(),
+      actions,
+      message: actions.length === 0 ? 'All running tasks within cost limits' : `${actions.length} action(s) taken`,
+    };
+  }),
+);
+
+server.tool(
+  'workforce_cost_log',
+  'Get recent cost log entries with token counts and a date-range summary.',
+  {
+    limit: z.number().optional().describe('Max entries to return (default 50)'),
+    start_date: z.string().optional().describe('ISO 8601 start date filter'),
+    end_date: z.string().optional().describe('ISO 8601 end date filter'),
+  },
+  wrap(({ limit, start_date, end_date }) => {
+    const entries = readCostLog(limit || 50);
+    const summary = getCostLogSummary(start_date, end_date);
+    return { entries, summary };
+  }),
 );
 
 // ---------------------------------------------------------------------------
@@ -222,6 +381,7 @@ server.tool(
 // ---------------------------------------------------------------------------
 
 let stopRecovery = null;
+let stopCostWatchdog = null;
 
 async function main() {
   const projectDir = process.cwd();
@@ -245,7 +405,10 @@ async function main() {
   // 5. Start recovery engine
   stopRecovery = startRecoveryEngine();
 
-  // 6. Connect MCP transport
+  // 6. Start cost watchdog
+  stopCostWatchdog = startCostWatchdog();
+
+  // 7. Connect MCP transport
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
@@ -256,6 +419,7 @@ async function main() {
 process.on('SIGTERM', () => {
   console.error('[workforce] Shutting down...');
   if (stopRecovery) stopRecovery();
+  if (stopCostWatchdog) stopCostWatchdog();
   stopWorkerManager();
   process.exit(0);
 });
@@ -263,6 +427,7 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.error('[workforce] Shutting down...');
   if (stopRecovery) stopRecovery();
+  if (stopCostWatchdog) stopCostWatchdog();
   stopWorkerManager();
   process.exit(0);
 });

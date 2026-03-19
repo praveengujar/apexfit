@@ -10,6 +10,8 @@ When the user invokes /workforce-health, display a visual health report.
 1. Call `workforce_health_metrics` for performance data
 2. Call `workforce_cost_summary` for cost data
 3. Call `workforce_list_tasks` to get recent failed tasks for analysis
+4. Call `workforce_get_budget` (scope: "global") for budget status and sparkline trends
+5. If no budget is configured, omit the BUDGET section
 
 ## Formatting Rules
 
@@ -38,6 +40,15 @@ By tier: Simple ${s} │ Medium ${m} │ Complex ${c}
 
 ACTIVITY
 Total tasks: {total}   │   Last 24h: {recent}   │   Uptime: {uptime}
+
+─── TRENDS ────────────────────────────────────────────
+Cost (14d): ▂▃▂▅▇▃▂▁▃▄▂▅▃▂  avg $2.14/day  total $29.96
+Tasks (14d): ▃▅▇▃▂▅▇▃▂▁▃▅▃▂  avg 4.2/day
+
+─── BUDGET ────────────────────────────────────────────
+Daily:   ${d_spent} / ${d_limit}  (${d_pct}% remaining)  {bar_10}
+Weekly:  ${w_spent} / ${w_limit}  (${w_pct}% remaining)  {bar_10}
+Monthly: ${m_spent} / ${m_limit}  (${m_pct}% remaining)  {bar_10}
 ```
 
 If there are improvement suggestions from the API, add after PERFORMANCE:

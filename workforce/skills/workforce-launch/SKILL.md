@@ -11,10 +11,12 @@ When the user invokes /workforce-launch, create a new autonomous task with minim
 
 2. Call `workforce_analyze_prompt` with the prompt to check admission, tier, and cost.
 
-3. **If NOT admitted** (too broad, too vague, too short):
+3. Call `workforce_get_cost_policy` to check if cost approval is enabled. If the estimated cost from step 2 would be rejected (exceeds per-task max), show the rejection template. If it needs confirmation, ask the user before proceeding.
+
+4. **If NOT admitted** (too broad, too vague, too short):
    - Show the rejection reason and offer to refine it yourself or decompose via /workforce-decompose
 
-4. **If admitted**: Call `workforce_create_task` with:
+5. **If admitted**: Call `workforce_create_task` with:
    - prompt: the final prompt
    - project: derive from current directory name unless user specifies one
    - autoMerge: default false (manual review)
@@ -33,9 +35,15 @@ When the user invokes /workforce-launch, create a new autonomous task with minim
   │ Prompt:  {full prompt text}                        │
   │ Tier:    {indicator} {tier}   Cost: ~${est}        │
   │ Project: {project}   Review: manual                │
+  │ Budget:  {cost_approval_status}                    │
   └────────────────────────────────────────────────────┘
   ✓ Task {id_8} created — {position_msg}
 ```
+
+Where `{cost_approval_status}` is one of:
+- `✓ Auto-approved (~$0.25)` — within policy limits
+- `⚠ Needs confirmation: ...` — estimated cost exceeds threshold
+- `✗ Rejected: ...` — exceeds hard per-task cap
 
 Where `{position_msg}` is either `running now (slot X/{max})` if it started immediately, or `position {N} in queue` if pending.
 

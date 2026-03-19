@@ -133,6 +133,38 @@ function _applySchema(db) {
     } catch { /* columns may already exist */ }
     db.prepare('INSERT INTO schema_migrations (version, appliedAt) VALUES (?, ?)').run(2, new Date().toISOString());
   }
+
+  // Migration 3: budgets + cost_history tables
+  const m3 = db.prepare('SELECT version FROM schema_migrations WHERE version = 3').get();
+  if (!m3) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS budgets (
+        id          TEXT PRIMARY KEY,
+        scope       TEXT NOT NULL DEFAULT 'global',
+        dailyLimit  REAL,
+        weeklyLimit REAL,
+        monthlyLimit REAL,
+        createdAt   TEXT NOT NULL,
+        updatedAt   TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS cost_history (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        taskId     TEXT NOT NULL,
+        project    TEXT,
+        cost       REAL NOT NULL,
+        tier       TEXT,
+        recordedAt TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_budgets_scope ON budgets(scope);
+      CREATE INDEX IF NOT EXISTS idx_cost_history_taskId ON cost_history(taskId);
+      CREATE INDEX IF NOT EXISTS idx_cost_history_recordedAt ON cost_history(recordedAt);
+      CREATE INDEX IF NOT EXISTS idx_cost_history_project ON cost_history(project);
+    `);
+    db.prepare('INSERT INTO schema_migrations (version, appliedAt) VALUES (?, ?)').run(3, new Date().toISOString());
+    console.error('[db] Applied migration 3: budgets + cost_history tables');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -237,4 +269,79 @@ export function removeWorker(taskId) {
 
 export function getWorker(taskId) {
   return stmt('SELECT * FROM workers WHERE taskId = ?').get(taskId);
+}
+
+// ---------------------------------------------------------------------------
+// Budgets
+// ---------------------------------------------------------------------------
+
+export function getBudget(scope = 'global') {
+  return stmt('SELECT * FROM budgets WHERE scope = ?').get(scope) || null;
+}
+
+export function setBudget(scope, { dailyLimit, weeklyLimit, monthlyLimit }) {
+  const now = new Date().toISOString();
+  const existing = getBudget(scope);
+
+  if (existing) {
+    getDb().prepare(
+      'UPDATE budgets SET dailyLimit = ?, weeklyLimit = ?, monthlyLimit = ?, updatedAt = ? WHERE scope = ?',
+    ).run(
+      dailyLimit ?? existing.dailyLimit,
+      weeklyLimit ?? existing.weeklyLimit,
+      monthlyLimit ?? existing.monthlyLimit,
+      now,
+      scope,
+    );
+  } else {
+    const id = `budget-${scope}-${Date.now()}`;
+    stmt(
+      'INSERT INTO budgets (id, scope, dailyLimit, weeklyLimit, monthlyLimit, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    ).run(id, scope, dailyLimit ?? null, weeklyLimit ?? null, monthlyLimit ?? null, now, now);
+  }
+
+  return getBudget(scope);
+}
+
+// ---------------------------------------------------------------------------
+// Cost history
+// ---------------------------------------------------------------------------
+
+export function recordCost(taskId, project, cost, tier) {
+  const now = new Date().toISOString();
+  stmt(
+    'INSERT INTO cost_history (taskId, project, cost, tier, recordedAt) VALUES (?, ?, ?, ?, ?)',
+  ).run(taskId, project ?? null, cost, tier ?? null, now);
+}
+
+export function getCostForPeriod(scope, startDate, endDate) {
+  if (scope === 'global') {
+    const row = stmt(
+      'SELECT COALESCE(SUM(cost), 0) AS total FROM cost_history WHERE recordedAt >= ? AND recordedAt <= ?',
+    ).get(startDate, endDate);
+    return row?.total ?? 0;
+  }
+  // scope = project name
+  const row = stmt(
+    'SELECT COALESCE(SUM(cost), 0) AS total FROM cost_history WHERE project = ? AND recordedAt >= ? AND recordedAt <= ?',
+  ).get(scope, startDate, endDate);
+  return row?.total ?? 0;
+}
+
+export function getDailyCostHistory(scope, days = 14) {
+  const results = [];
+  const now = new Date();
+
+  for (let i = days - 1; i >= 0; i--) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const startDate = day.toISOString();
+    const endDate = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).toISOString();
+    const total = getCostForPeriod(scope, startDate, endDate);
+    results.push({
+      date: startDate.slice(0, 10),
+      cost: Math.round(total * 100) / 100,
+    });
+  }
+
+  return results;
 }

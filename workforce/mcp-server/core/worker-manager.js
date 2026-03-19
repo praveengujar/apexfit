@@ -28,6 +28,9 @@ import {
   releaseTaskClaim,
   registerWorker,
   removeWorker,
+  getBudget,
+  getCostForPeriod,
+  recordCost,
 } from './db.js';
 import { logEvent } from './task-events.js';
 import { createToken, removeToken } from './project-state.js';
@@ -40,7 +43,9 @@ import {
   getSessionPid,
   isSessionAlive,
 } from './tmux.js';
-import { recordActualCost } from './cost-model.js';
+import { recordActualCost, classifyTier } from './cost-model.js';
+import { estimateTaskCost } from './task-cost.js';
+import { parseDetailedCost, appendCostLog } from './cost-tracker.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -132,6 +137,56 @@ async function spawnWorker(task) {
   const repoRoot = PROJECT_DIR;
   const worktreePath = join(repoRoot, 'wf', taskId);
   const branchName = `wf/${taskId}`;
+
+  // 0. Pre-launch cost gate — check budget before creating worktree
+  try {
+    const estimate = estimateTaskCost(task.prompt, task.retryCount || 0);
+    const estimatedCost = estimate.totalCost;
+    const now = new Date();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()).toISOString();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const budgetScopes = ['global'];
+    if (task.project) budgetScopes.push(task.project);
+
+    for (const scope of budgetScopes) {
+      const budget = getBudget(scope);
+      if (!budget) continue;
+
+      const todaySpend = getCostForPeriod(scope, startOfToday, endOfDay);
+      const weekSpend = getCostForPeriod(scope, startOfWeek, endOfDay);
+      const monthSpend = getCostForPeriod(scope, startOfMonth, endOfDay);
+
+      const violations = [];
+      if (budget.dailyLimit != null && todaySpend + estimatedCost > budget.dailyLimit) {
+        violations.push(`daily ${scope}: $${todaySpend.toFixed(2)} + $${estimatedCost.toFixed(2)} > $${budget.dailyLimit.toFixed(2)}`);
+      }
+      if (budget.weeklyLimit != null && weekSpend + estimatedCost > budget.weeklyLimit) {
+        violations.push(`weekly ${scope}: $${weekSpend.toFixed(2)} + $${estimatedCost.toFixed(2)} > $${budget.weeklyLimit.toFixed(2)}`);
+      }
+      if (budget.monthlyLimit != null && monthSpend + estimatedCost > budget.monthlyLimit) {
+        violations.push(`monthly ${scope}: $${monthSpend.toFixed(2)} + $${estimatedCost.toFixed(2)} > $${budget.monthlyLimit.toFixed(2)}`);
+      }
+
+      if (violations.length > 0) {
+        const errorMsg = `Budget exceeded: ${violations.join('; ')}`;
+        console.error(`[spawnWorker] Budget gate blocked task ${taskId}: ${errorMsg}`);
+        updateTask(taskId, {
+          status: 'failed',
+          error: errorMsg,
+          completedAt: new Date().toISOString(),
+        });
+        logEvent(taskId, 'budget_exceeded', errorMsg);
+        releaseTaskClaim(taskId);
+        return;
+      }
+    }
+  } catch (err) {
+    // Budget check is non-fatal — log and continue
+    console.error(`[spawnWorker] Budget check error for ${taskId}:`, err.message);
+  }
 
   // 1. Create git worktree
   try {
@@ -446,15 +501,19 @@ async function handleTmuxWorkerExit(taskId, output) {
     cleanupWorktree(taskId, worktreePath);
   }
 
-  // Cost tracking
+  // Cost tracking — enhanced with token-level detail
   try {
-    const costMatch = (output || '').match(/\$([0-9.]+)/);
-    if (costMatch) {
-      const actualCost = parseFloat(costMatch[1]);
-      if (!isNaN(actualCost) && actualCost > 0) {
-        recordActualCost(task.prompt, actualCost);
-        updateTask(taskId, { cost: actualCost });
-      }
+    const detailed = parseDetailedCost(output || '');
+    const actualCost = detailed.cost;
+    if (actualCost && actualCost > 0) {
+      recordActualCost(task.prompt, actualCost);
+      updateTask(taskId, { cost: actualCost });
+      const tier = classifyTier(task.prompt || '');
+      recordCost(taskId, task.project, actualCost, tier);
+      appendCostLog({
+        taskId, project: task.project || null, cost: actualCost, tier,
+        inputTokens: detailed.inputTokens, outputTokens: detailed.outputTokens,
+      });
     }
   } catch { /* ignore */ }
 
@@ -535,15 +594,19 @@ async function handleWorkerExit(task, exitCode, stdout, stderr) {
     cleanupWorktree(taskId, worktreePath);
   }
 
-  // 6. Record actual cost if available
+  // 6. Record actual cost if available — enhanced with token-level detail
   try {
-    const costMatch = (stdout || '').match(/\$([0-9.]+)/);
-    if (costMatch) {
-      const actualCost = parseFloat(costMatch[1]);
-      if (!isNaN(actualCost) && actualCost > 0) {
-        recordActualCost(task.prompt, actualCost);
-        updateTask(taskId, { cost: actualCost });
-      }
+    const detailed = parseDetailedCost(stdout || '');
+    const actualCost = detailed.cost;
+    if (actualCost && actualCost > 0) {
+      recordActualCost(task.prompt, actualCost);
+      updateTask(taskId, { cost: actualCost });
+      const tier = classifyTier(task.prompt || '');
+      recordCost(taskId, task.project, actualCost, tier);
+      appendCostLog({
+        taskId: task.id, project: task.project || null, cost: actualCost, tier,
+        inputTokens: detailed.inputTokens, outputTokens: detailed.outputTokens,
+      });
     }
   } catch {
     // ignore cost parsing errors
